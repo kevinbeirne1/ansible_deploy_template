@@ -1,0 +1,120 @@
+- name: Deadsnakes PPA to get Python 3.6
+  apt_repository:
+    repo: "ppa:deadsnakes/ppa"
+
+- name: make sure required packages are installed
+  apt: pkg=nginx,git,python3.6,python3.6-venv state=present
+
+- name: allow long hostnames in nginx
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    regexp: '(\s+)#? ? server_names_hash_bucket_size'
+    backrefs: yes
+    line: '\1server_names_hash_bucket_size 64;'
+
+- name: add nginx config to sites-available
+  template:
+    src: ./nginx.conf.j2
+    dest: /etc/nginx/sites-available/{{ HOST }}
+  notify:
+      - restart nginx
+
+- name: add symlink in nginx sites-enabled
+  file:
+    src: /etc/nginx/sites-available/{{ HOST }}
+    dest: /etc/nginx/sites-enabled/{{ HOST }}
+    state: link
+  notify:
+    - restart nginx
+
+- name: write gunicorn service script
+  template:
+    src: ./gunicorn.service.j2
+    dest: /etc/systemd/system/gunicorn-{{ HOST }}.service
+  notify:
+    - restart gunicorn
+  tags:
+    - gunicorn
+
+
+# Get the latest commit from Github
+- name: clone latest version from from git
+  ansible.builtin.git:
+    repo: "{{ REPO_URL }}"
+    dest: "{{ ROOT_FOLDER }}"
+    single_branch: yes
+    version: main
+    force: yes
+
+# Maintain Virtual Environment
+- name: check if virtual environment exists
+  stat:
+    path: "{{ PYTHON_EXECUTABLE }}"
+  register: stat_result
+
+- name: create a virtual environment in the root folder
+  command: python3 -m venv "{{ ROOT_FOLDER }}/virtualenv"
+  when: not stat_result.stat.exists
+
+- name: Install the python packages for the project
+  pip:
+   executable: "{{ ROOT_FOLDER }}/virtualenv/bin/pip"
+   requirements: "{{ ROOT_FOLDER }}/requirements.txt"
+
+- name: Check that .env exists
+  stat:
+    path: "{{ DOT_ENV_FILE }}"
+  register: dotenv_status
+
+# Ensure .env file present & has secure settings
+- name: Create .env file
+  command: "touch {{ DOT_ENV_FILE }}"
+  when: not dotenv_status.stat.exists
+
+- name: run get_secret_key script
+  command:
+    argv:
+      - "{{ PYTHON_EXECUTABLE }}"
+      - "{{ ROOT_FOLDER }}/deploy_tools/get_secret_key.py"
+  register: secret_key
+
+- name: Verify DJANGO_SECRET_KEY present
+  lineinfile:
+      path: '{{ DOT_ENV_FILE }}'
+      regexp: "^DJANGO_SECRET_KEY="
+      line: "{{ secret_key['stdout_lines'][0] }}"
+
+- name: Verify DJANGO_DEBUG_FALSE set to y
+  lineinfile:
+      path: '{{ DOT_ENV_FILE }}'
+      line: 'DJANGO_DEBUG_FALSE=y'
+
+- name: Verify SITENAME is set
+  lineinfile:
+      path: '{{ DOT_ENV_FILE }}'
+      line: 'SITENAME={{ HOST }}'
+
+# Collect static files
+- name: Update static files
+  command:
+    argv:
+      - "{{ PYTHON_EXECUTABLE }}"
+      - "{{ ROOT_FOLDER }}/manage.py"
+      - collectstatic
+      - --noinput
+
+# Migrate database
+- name: Update the database
+  command:
+    argv:
+      - "{{ PYTHON_EXECUTABLE }}"
+      - "{{ ROOT_FOLDER }}/manage.py"
+      - migrate
+      - --noinput
+  notify:
+      - restart nginx
+      - restart gunicorn
+  tags:
+    - 'migrate'
+
+
