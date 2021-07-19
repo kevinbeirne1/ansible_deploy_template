@@ -1,0 +1,2 @@
+[live]
+<site.something.com> ansible_become=yes ansible_ssh_user=<ssh username>

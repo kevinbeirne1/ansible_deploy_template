@@ -1,0 +1,8 @@
+# Deploy latest commit to the server
+- hosts: all
+  roles:
+    - common
+  vars:
+    HOST: '{{ inventory_hostname }}'
+    REPO_URL: "<git repository link here>"
+

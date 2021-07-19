@@ -1,0 +1,8 @@
+---
+
+ROOT_FOLDER: '/home/{{ ansible_ssh_user }}/sites/{{ HOST }}'
+DOT_ENV_FILE: "{{ ROOT_FOLDER }}/.env"
+VIRTUAL_ENV_FOLDER: '{{ ROOT_FOLDER }}/virtualenv'
+PYTHON_EXECUTABLE: '{{ VIRTUAL_ENV_FOLDER }}/bin/python'
+
+...
