@@ -3,6 +3,24 @@ Basic ansible playbook to deploy a django website (with nginx and gunicorn) usin
 
 In the process of working through Test-Driven-Development with Python, I was unable to successfully automate the deployment using Fabric as was suggested in the [book](https://www.obeythetestinggoat.com/book/chapter_automate_deployment_with_fabric.html). Ansible was suggested as an alternative in the appendices. 
 
+This playbook does a lot of the steps outlined in the section of [chapter 10: Thinking about automation](https://www.obeythetestinggoat.com/book/chapter_making_deployment_production_ready.html#_thinking_about_automating). 
+**Provisioning**
+* Add the deadsnakes repository 
+* Install nginx, git, python3.6, python3.6-venv
+* Add Nginx config for virtual host
+* Add Systemd job for Gunicorn (including unique SECRET_KEY)
+
+**Deployment**
+* Create directory in ~/sites
+* Pull down source code
+* Start virtualenv in virtualenv
+* pip install -r requirements.txt
+* manage.py migrate for database
+* collectstatic for static files
+* Restart Gunicorn job
+
+At the current time it does not fun the functional tests on the site
+
 ## Using the playbook
 
 **BEFORE RUNNING THE PLAYBOOK**
