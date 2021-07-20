@@ -71,11 +71,10 @@
   command: "touch {{ DOT_ENV_FILE }}"
   when: not dotenv_status.stat.exists
 
-- name: run get_secret_key script
-  command:
-    argv:
-      - "{{ PYTHON_EXECUTABLE }}"
-      - "{{ ROOT_FOLDER }}/deploy_tools/get_secret_key.py"
+- name: run get_secret_key as script
+  ansible.builtin.script: "get_secret_key.py {{ ROOT_FOLDER }}"
+  args:
+    executable: "{{ PYTHON_EXECUTABLE }}"
   register: secret_key
 
 - name: Verify DJANGO_SECRET_KEY present
