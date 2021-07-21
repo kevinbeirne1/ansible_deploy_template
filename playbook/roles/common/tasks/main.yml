@@ -81,7 +81,7 @@
   lineinfile:
       path: '{{ DOT_ENV_FILE }}'
       regexp: "^DJANGO_SECRET_KEY="
-      line: "{{ secret_key['stdout_lines'][0] }}"
+      line: "{{ secret_key['stdout_lines'][1] }}"
 
 - name: Verify DJANGO_DEBUG_FALSE set to y
   lineinfile:
