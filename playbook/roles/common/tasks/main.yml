@@ -56,6 +56,12 @@
   command: python3 -m venv "{{ ROOT_FOLDER }}/virtualenv"
   when: not stat_result.stat.exists
 
+- name: pip self-update
+  pip:
+    name: pip
+    executable: "{{ ROOT_FOLDER }}/virtualenv/bin/pip"
+    state: latest
+
 - name: Install the python packages for the project
   pip:
    executable: "{{ ROOT_FOLDER }}/virtualenv/bin/pip"
