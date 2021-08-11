@@ -30,11 +30,11 @@ At the current time it does not fun the functional tests on the site
 * Install python-dotenv
      * Needed for the get_secret_key.py file
 * Update `site.yml` with the correct git repo link
-* Update `production` and `staging` files with your respective production and staging servers
-     * In both files also specify the ssh username that will be used to log in to your server
+* Update `hosts` file with your respective production and staging servers
+     * For both servers also specify the ssh username that will be used to log in to your server
 
 **RUNNING THE PLAYBOOK**
   * Navigate to the playbook folder in the ubuntu terminal
-  * Run the playbook using `ansible-playbook -i production site.yml -kK`
+  * Run the playbook using `ansible-playbook site.yml -kK --limit staging`
     * Change `staging` to `production` to deploy to production server
     * -kK asks for your ssh password & your sudo password when you run the playbook.

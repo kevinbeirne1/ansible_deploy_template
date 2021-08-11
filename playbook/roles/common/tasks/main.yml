@@ -67,27 +67,42 @@
    executable: "{{ ROOT_FOLDER }}/virtualenv/bin/pip"
    requirements: "{{ ROOT_FOLDER }}/requirements.txt"
 
+# Ensure .env file present & has secure settings
 - name: Check that .env exists
   stat:
     path: "{{ DOT_ENV_FILE }}"
   register: dotenv_status
+  tags: dotenv
 
-# Ensure .env file present & has secure settings
 - name: Create .env file
   command: "touch {{ DOT_ENV_FILE }}"
   when: not dotenv_status.stat.exists
+  tags: dotenv
+
+- name: Check SECRET_KEY is in dotenv
+  command: 'grep -Eqx "DJANGO_SECRET_KEY=\S{50}$" {{ DOT_ENV_FILE }}'
+  # E - Regex, q - quiet/no print to console, x - matches all of line
+  register: secret_key_status
+  ignore_errors: yes
+  tags: dotenv
 
 - name: run get_secret_key as script
   ansible.builtin.script: "get_secret_key.py {{ ROOT_FOLDER }}"
   args:
     executable: "{{ PYTHON_EXECUTABLE }}"
   register: secret_key
+  when: secret_key_status.rc == 1
+  no_log: True
+  tags: dotenv
 
-- name: Verify DJANGO_SECRET_KEY present
+- name: Set DJANGO_SECRET_KEY
   lineinfile:
       path: '{{ DOT_ENV_FILE }}'
       regexp: "^DJANGO_SECRET_KEY="
       line: "{{ secret_key['stdout_lines'][1] }}"
+  when: secret_key_status.rc == 1
+  no_log: True
+  tags: dotenv
 
 - name: Verify DJANGO_DEBUG_FALSE set to y
   lineinfile:
