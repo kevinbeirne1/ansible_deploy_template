@@ -4,5 +4,6 @@
     - common
   vars:
     HOST: '{{ inventory_hostname }}'
+    WSGI_DIRECTORY: "<folder name where wsgi.py file is >"
     REPO_URL: "<git repository link here>"
-
+    REPO_BRANCH: "<specify the branch name you want to clone>"

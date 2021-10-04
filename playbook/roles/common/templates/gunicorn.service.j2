@@ -10,7 +10,7 @@ ExecStart=/home/{{ ansible_ssh_user }}/sites/{{ HOST }}/virtualenv/bin/gunicorn 
     --bind unix:/tmp/{{ HOST }}.socket \
     --access-logfile ../access.log \
     --error-logfile ../error.log \
-    superlists.wsgi:application
+    {{ WSGI_DIRECTORY }}.wsgi:application
 
 [Install]
 WantedBy=multi-user.target

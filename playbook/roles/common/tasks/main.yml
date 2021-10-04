@@ -43,7 +43,7 @@
     repo: "{{ REPO_URL }}"
     dest: "{{ ROOT_FOLDER }}"
     single_branch: yes
-    version: main
+    version: "{{ REPO_BRANCH }}"
     force: yes
 
 # Maintain Virtual Environment
@@ -67,6 +67,11 @@
    executable: "{{ ROOT_FOLDER }}/virtualenv/bin/pip"
    requirements: "{{ ROOT_FOLDER }}/requirements.txt"
 
+- name: Install Gunicorn
+  pip:
+    name: gunicorn
+    virtualenv: "{{ ROOT_FOLDER }}/virtualenv"
+
 # Ensure .env file present & has secure settings
 - name: Check that .env exists
   stat:
@@ -80,7 +85,7 @@
   tags: dotenv
 
 - name: Check SECRET_KEY is in dotenv
-  command: 'grep -Eqx "DJANGO_SECRET_KEY=\S{50}$" {{ DOT_ENV_FILE }}'
+  command: 'grep -Eqx "SECRET_KEY=\S{50}$" {{ DOT_ENV_FILE }}'
   # E - Regex, q - quiet/no print to console, x - matches all of line
   register: secret_key_status
   ignore_errors: yes
@@ -98,16 +103,16 @@
 - name: Set DJANGO_SECRET_KEY
   lineinfile:
       path: '{{ DOT_ENV_FILE }}'
-      regexp: "^DJANGO_SECRET_KEY="
+      regexp: "^SECRET_KEY="
       line: "{{ secret_key['stdout_lines'][1] }}"
   when: secret_key_status.rc == 1
   no_log: True
   tags: dotenv
 
-- name: Verify DJANGO_DEBUG_FALSE set to y
+- name: Verify DJANGO_DEBUG set to FALSE
   lineinfile:
       path: '{{ DOT_ENV_FILE }}'
-      line: 'DJANGO_DEBUG_FALSE=y'
+      line: 'DEBUG=FALSE'
 
 - name: Verify SITENAME is set
   lineinfile:
@@ -136,5 +141,3 @@
       - restart gunicorn
   tags:
     - 'migrate'
-
-

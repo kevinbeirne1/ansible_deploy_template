@@ -20,21 +20,28 @@ This playbook does a lot of the steps outlined in the section of [chapter 10: Th
 * collectstatic for static files
 * Restarts Gunicorn job
 
-At the current time it does not fun the functional tests on the site
+At the current time it does not run the functional tests on the site
 
 ## Using the playbook
 
 **BEFORE RUNNING THE PLAYBOOK**
 * Install ansible
      * **NOTE** Ansible isn't currently support on windows. Can get around this by installing ubuntu terminal through WSL. The ubuntu website has a [walkthrough](https://ubuntu.com/tutorials/ubuntu-on-windows) of how to install
-* Install python-dotenv
-     * Needed for the get_secret_key.py file
-* Update `site.yml` with the correct git repo link
-* Update `hosts` file with your respective production and staging servers
-     * For both servers also specify the ssh username that will be used to log in to your server
+* Install django-environ
+* Ensure Django settings file is set up for secure running on server
+  * DEBUG, SECRET_KEY, and HOSTS should be got from .env file
+  * [django-environ docs](https://django-environ.readthedocs.io/en/latest/)
+* Update `site.yml` with 
+  * WSGI_DIRECTORY: The directory name where the for the project wsgi.py file
+  * REPO_URL: The URL for the git repo
+  * REPO_BRANCH: The branch name of the git repo to be cloned
+* Update `production` and `staging` files with your
+  * Production and staging servers
+  * For both servers also specify the ssh username that will be used to log in to your server
 
 **RUNNING THE PLAYBOOK**
   * Navigate to the playbook folder in the ubuntu terminal
-  * Run the playbook using `ansible-playbook site.yml -kK --limit staging`
+  * Run the playbook using `ansible-playbook site.yml -kK -i staging`
     * Change `staging` to `production` to deploy to production server
     * -kK asks for your ssh password & your sudo password when you run the playbook.
+    * `ansible.cfg` sets the default server to staging if `-i <servers>` is not included
