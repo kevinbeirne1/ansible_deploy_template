@@ -1,5 +1,11 @@
 server {
     listen 80;
+    server_name {{ HOST }}
+    return 301 https://{{ HOST }}$request_uri;
+}
+
+server {
+    listen 443 ssl;
     server_name {{ HOST }};
 
     location /static {
@@ -10,4 +16,14 @@ server {
         proxy_set_header Host {{ HOST }};
         proxy_pass http://unix:/tmp/{{ HOST }}.socket;
     }
+
+    ssl on;
+    ssl_certificate /etc/ssl/certs/kbeirne_com.crt;
+    ssl_certificate_key /etc/ssl/private/kbeirne.com.key;
+    ssl_prefer_server_ciphers on;
+
+    ## OCSP Stapling
+    resolver 127.0.0.1;
+    ssl_stapling on;
+    ssl_trusted_certificate /etc/ssl/certs/kbeirne_com-ssl-bundle.crt
 }

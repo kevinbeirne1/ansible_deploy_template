@@ -17,6 +17,9 @@
 * Update `production` and `staging` files with your
   * Production and staging servers
   * For both servers also specify the ssh username that will be used to log in to your server
+* **If using different ssl cert**
+  * Update `nginx.conf.j2` replacing location/names of ssl cert and key if necessary
+
 
 **RUNNING THE PLAYBOOK**
   * Navigate to the playbook folder in the ubuntu terminal

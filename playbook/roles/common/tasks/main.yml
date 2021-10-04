@@ -68,8 +68,8 @@
 - name: Install gunicorn and django-environ
   pip:
     name:
-      - gunicorn
-      - django-environ
+      - gunicorn==20.0.1
+      - django-environ==0.7.0
     virtualenv: "{{ ROOT_FOLDER }}/virtualenv"
 
 - name: Install the python packages for the project
