@@ -3,7 +3,12 @@
     repo: "ppa:deadsnakes/ppa"
 
 - name: make sure required packages are installed
-  apt: pkg=nginx,git,python3.6,python3.6-venv state=present
+  apt:
+    pkg:
+    - nginx
+    - git
+    - "{{ PYTHON_VERSION }}"
+    - "{{ PYTHON_VERSION }}-venv"
 
 - name: allow long hostnames in nginx
   lineinfile:
@@ -33,8 +38,6 @@
     dest: /etc/systemd/system/gunicorn-{{ HOST }}.service
   notify:
     - restart gunicorn
-  tags:
-    - gunicorn
 
 
 # Get the latest commit from Github
@@ -50,27 +53,29 @@
 - name: check if virtual environment exists
   stat:
     path: "{{ PYTHON_EXECUTABLE }}"
-  register: stat_result
+  register: venv_status
 
 - name: create a virtual environment in the root folder
-  command: python3 -m venv "{{ ROOT_FOLDER }}/virtualenv"
-  when: not stat_result.stat.exists
+  command: "{{ PYTHON_VERSION }} -m venv '{{ ROOT_FOLDER }}/virtualenv'"
+  when: not venv_status.stat.exists
 
 - name: pip self-update
   pip:
     name: pip
-    executable: "{{ ROOT_FOLDER }}/virtualenv/bin/pip"
+    virtualenv: "{{ ROOT_FOLDER }}/virtualenv"
     state: latest
+
+- name: Install gunicorn and django-environ
+  pip:
+    name:
+      - gunicorn
+      - django-environ
+    virtualenv: "{{ ROOT_FOLDER }}/virtualenv"
 
 - name: Install the python packages for the project
   pip:
-   executable: "{{ ROOT_FOLDER }}/virtualenv/bin/pip"
+   virtualenv: "{{ ROOT_FOLDER }}/virtualenv"
    requirements: "{{ ROOT_FOLDER }}/requirements.txt"
-
-- name: Install Gunicorn
-  pip:
-    name: gunicorn
-    virtualenv: "{{ ROOT_FOLDER }}/virtualenv"
 
 # Ensure .env file present & has secure settings
 - name: Check that .env exists
@@ -100,7 +105,7 @@
   no_log: True
   tags: dotenv
 
-- name: Set DJANGO_SECRET_KEY
+- name: Set SECRET_KEY
   lineinfile:
       path: '{{ DOT_ENV_FILE }}'
       regexp: "^SECRET_KEY="
@@ -109,7 +114,7 @@
   no_log: True
   tags: dotenv
 
-- name: Verify DJANGO_DEBUG set to FALSE
+- name: Verify DEBUG set to FALSE
   lineinfile:
       path: '{{ DOT_ENV_FILE }}'
       line: 'DEBUG=FALSE'
