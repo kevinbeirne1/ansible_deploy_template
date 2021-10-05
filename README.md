@@ -42,6 +42,7 @@ This playbook does a lot of the steps outlined in the section of [chapter 10: Th
 * Adds Systemd job for Gunicorn (including unique SECRET_KEY)
 
 **Deployment**
+* Create directory for site and set owner to {{ ansible_ssh_user }}
 * Clone latest version from git to ~/sites/<website_name>
 * Create virtualenv if not present
 * Update pip to latest version

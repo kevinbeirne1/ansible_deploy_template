@@ -1,6 +1,6 @@
 server {
     listen 80;
-    server_name {{ HOST }}
+    server_name {{ HOST }};
     return 301 https://{{ HOST }}$request_uri;
 }
 
@@ -25,5 +25,5 @@ server {
     ## OCSP Stapling
     resolver 127.0.0.1;
     ssl_stapling on;
-    ssl_trusted_certificate /etc/ssl/certs/kbeirne_com-ssl-bundle.crt
+    ssl_trusted_certificate /etc/ssl/certs/kbeirne_com-ssl-bundle.crt;
 }
