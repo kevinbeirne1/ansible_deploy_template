@@ -81,7 +81,7 @@
 - name: Install Gunicorn and django-environ
   pip:
     name:
-      - gunicorn==20.0.1
+      - gunicorn==20.1.0
       - django-environ==0.7.0
     virtualenv: "{{ ROOT_FOLDER }}/virtualenv"
 
