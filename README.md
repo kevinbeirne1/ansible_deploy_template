@@ -1,4 +1,5 @@
 # Ansible Deploy Template
+This Ansible playbook deploys a Django website (with nginx and Gunicorn) to a cloud server.
 
 ## Using the playbook
 
